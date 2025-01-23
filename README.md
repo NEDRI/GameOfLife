@@ -3,4 +3,5 @@ Projekt na informatyke
 
 Bibloteki:
  - pip install numpy
- - py -m pip install -U pygame --user (Windows)
+    (Windows)
+ - py -m pip install -U pygame --user 
