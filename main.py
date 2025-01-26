@@ -1,5 +1,7 @@
 import sys, pygame, numpy
 
+print("pygame version:", pygame.ver)
+print("numpy version:", numpy.__version__)
 
 pygame.init()
 winHeight = 800
@@ -33,7 +35,7 @@ while running:
         for x in range(0, winWidth, blockSize):
             for y in range(0, winHeight, blockSize):
                 rect = pygame.Rect(x, y, blockSize, blockSize)
-                pygame.draw.rect(screen, grey, rect, 1)  
+                pygame.draw.rect(screen, grey, rect, 1)
 
     screen.fill("white")
     drawGrid()
