@@ -25,11 +25,12 @@ while running:
     white= (255, 255, 255)
     black = (0, 0, 0)
     grey = (200, 200, 200)
-    #wielkosc grid
+    #wielkosc bloków
     blockSize = 20
+    cellSize = 20
     #kolory komórek
     aliveColor = (0, 245, 255)
-    deadColor = (255, 109 ,0)
+    deadColor = (255, 110 ,20)
 
     def drawGrid():
         for x in range(0, winWidth, blockSize):
@@ -37,8 +38,15 @@ while running:
                 rect = pygame.Rect(x, y, blockSize, blockSize)
                 pygame.draw.rect(screen, grey, rect, 1)
 
+    def drawcells():
+        pygame.draw.rect(screen, aliveColor, pygame.Rect(20, 20, cellSize, cellSize))
+        pygame.draw.rect(screen, deadColor, pygame.Rect(40, 40, cellSize, cellSize))
+        tablica = numpy.array([])
+
     screen.fill("white")
     drawGrid()
+    drawcells()
+
 
     pygame.display.flip()
     clock.tick(10)
