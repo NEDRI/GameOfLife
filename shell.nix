@@ -4,7 +4,7 @@ pkgs.mkShell {
   name = "pygame-numpy-env";
 
   buildInputs = [
-    pkgs.python311         # Use Python 3.11 or your preferred version
+    pkgs.python311         
     pkgs.python311Packages.pygame
     pkgs.python311Packages.numpy
   ];
