@@ -38,14 +38,14 @@ while running:
                 rect = pygame.Rect(x, y, blockSize, blockSize)
                 pygame.draw.rect(screen, grey, rect, 1)
 
-    def drawcells():
+    def drawCells():
         pygame.draw.rect(screen, aliveColor, pygame.Rect(20, 20, cellSize, cellSize))
         pygame.draw.rect(screen, deadColor, pygame.Rect(40, 40, cellSize, cellSize))
-        tablica = numpy.array([])
+        
 
     screen.fill("white")
     drawGrid()
-    drawcells()
+    drawCells()
 
 
     pygame.display.flip()
