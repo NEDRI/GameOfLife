@@ -2,7 +2,7 @@ import pygame
 import random
 import time
 
-# Set up parameters
+
 WIDTH = 800
 HEIGHT = 600
 CELL_SIZE = 15
@@ -10,13 +10,11 @@ cols = WIDTH // CELL_SIZE
 rows = HEIGHT // CELL_SIZE
 FPS = 30
 
-# Initialize Pygame
 pygame.init()
 display = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Game of Life")
 clock = pygame.time.Clock()
 
-# Create grid
 grid = []
 for i in range(rows):
     grid.append([random.choice([0, 1]) for _ in range(cols)])
