@@ -9,7 +9,7 @@ HEIGHT = 600
 CELL_SIZE = 15
 cols = WIDTH // CELL_SIZE
 rows = HEIGHT // CELL_SIZE
-FPS = 30
+FPS = 10
 
 pygame.init()
 display = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -26,10 +26,10 @@ def draw_grid():
             color = (255, 255, 255) if grid[i][j] else (0, 0, 0)
             pygame.draw.rect(display, color,
                             (j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1))
-    for i in range(rows + 1):
+    for i in range(rows):
         pygame.draw.line(display, (50, 50, 50), (0, i * CELL_SIZE),
                         (WIDTH, i * CELL_SIZE))
-    for j in range(cols + 1):
+    for j in range(cols):
         pygame.draw.line(display, (50, 50, 50), (j * CELL_SIZE, 0),
                         (j * CELL_SIZE, HEIGHT))
 
@@ -73,6 +73,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.K_q or pygame.K_ESCAPE:
+                running = False
             if event.key == pygame.K_SPACE:
                 paused = not paused
 
