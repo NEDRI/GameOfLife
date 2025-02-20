@@ -73,10 +73,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.type == pygame.K_q or pygame.K_ESCAPE:
-                running = False
             if event.key == pygame.K_SPACE:
                 paused = not paused
+            if event.key == pygame.K_q or pygame.K_ESCAPE:
+                running = False
 
     display.fill((0, 0, 0))
     
