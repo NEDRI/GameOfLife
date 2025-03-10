@@ -22,7 +22,7 @@ for i in range(rows):
 def draw_grid():
     for i in range(rows):
         for j in range(cols):
-            color = (255, 255, 255) if grid[i][j] else (0, 0, 0)
+            color = (255, 20, 0) if grid[i][j] else (0, 0, 0) #(55, 255, 252) druga druzyna
             pygame.draw.rect(display, color,
                             (j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1))
     for i in range(rows):
