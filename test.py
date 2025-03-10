@@ -1,10 +1,11 @@
+from operator import truediv
 import pygame
 import random
 
 print("pygame version:", pygame.ver)
 
-WIDTH = 600
-HEIGHT = 600
+WIDTH = 1000
+HEIGHT = 1000
 CELL_SIZE = 15
 cols = WIDTH // CELL_SIZE
 rows = HEIGHT // CELL_SIZE
@@ -98,8 +99,11 @@ while running:
     draw_text()
     
     if not paused:
-        update_grid()
-        generation += 1
+        if generation < 50:
+            update_grid()
+            generation += 1
+        else:
+            paused = True
     
     pygame.display.flip()
 
