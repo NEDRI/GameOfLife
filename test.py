@@ -4,8 +4,8 @@ import random
 
 print("pygame version:", pygame.ver)
 
-WIDTH = 1000
-HEIGHT = 1000
+WIDTH = 800
+HEIGHT = 800
 CELL_SIZE = 15
 cols = WIDTH // CELL_SIZE
 rows = HEIGHT // CELL_SIZE
