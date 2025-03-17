@@ -1,10 +1,11 @@
+from operator import truediv
 import pygame
 import random
 
 print("pygame version:", pygame.ver)
 
-WIDTH = 600
-HEIGHT = 600
+WIDTH = 800
+HEIGHT = 800
 CELL_SIZE = 15
 cols = WIDTH // CELL_SIZE
 rows = HEIGHT // CELL_SIZE
@@ -17,12 +18,17 @@ clock = pygame.time.Clock()
 
 grid = []
 for i in range(rows):
-    grid.append([random.choice([0, 1]) for _ in range(cols)])
+    grid.append([random.choice([0, 1, 2]) for _ in range(cols)])
 
 def draw_grid():
     for i in range(rows):
         for j in range(cols):
-            color = (255, 20, 0) if grid[i][j] else (0, 0, 0) #(55, 255, 252) druga druzyna
+            if grid[i][j] == 1:
+                color = (255, 20, 0)  
+            elif grid[i][j] == 2:
+                color = (55, 255, 252)  
+            else:
+                color = (0, 0, 0) 
             pygame.draw.rect(display, color,
                             (j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1))
     for i in range(rows):
@@ -33,25 +39,35 @@ def draw_grid():
                         (j * CELL_SIZE, HEIGHT))
 
 def count_neighbors(x, y):
-    total = 0
+    total_team1 = 0
+    total_team2 = 0
     for i in range(-1, 2):
         for j in range(-1, 2):
             if x + i >= 0 and x + i < rows and y + j >= 0 and y + j < cols:
-                total += grid[(x + i) % rows][(y + j) % cols]
-    return total - grid[x][y]
+                if grid[(x + i) % rows][(y + j) % cols] == 1:
+                    total_team1 += 1
+                elif grid[(x + i) % rows][(y + j) % cols] == 2:
+                    total_team2 += 1
+    return total_team1, total_team2
 
 def update_grid():
     global grid
     new_grid = [row[:] for row in grid]
     for i in range(rows):
         for j in range(cols):
-            neighbors = count_neighbors(i, j)
-            if grid[i][j]:
-                if neighbors < 2 or neighbors > 3:
+            neighbors_team1, neighbors_team2 = count_neighbors(i, j)
+
+            if grid[i][j] == 1:  
+                if neighbors_team1 < 2 or neighbors_team1 > 3:
                     new_grid[i][j] = 0
-            else:
-                if neighbors == 3:
+            elif grid[i][j] == 2:  
+                if neighbors_team2 < 2 or neighbors_team2 > 3:  
+                    new_grid[i][j] = 0
+            else:  
+                if neighbors_team1 == 3:
                     new_grid[i][j] = 1
+                elif neighbors_team2 == 3:
+                    new_grid[i][j] = 2 
     grid = new_grid
 
 def draw_text():
@@ -74,7 +90,7 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 paused = not paused
-            elif event.key == pygame.K_q or pygame.K_ESCAPE:
+            elif event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
                 running = False
 
     display.fill((0, 0, 0))
@@ -83,8 +99,11 @@ while running:
     draw_text()
     
     if not paused:
-        update_grid()
-        generation += 1
+        if generation < 50:
+            update_grid()
+            generation += 1
+        else:
+            paused = True
     
     pygame.display.flip()
 
