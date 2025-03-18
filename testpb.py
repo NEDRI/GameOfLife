@@ -18,6 +18,8 @@ clock = pygame.time.Clock()
 grid = [[0 for _ in range(cols)] for _ in range(rows)]
 
 generation = 0
+total_team1_units = 0
+total_team2_units = 0
 
 def draw_grid():
     for i in range(rows):
@@ -50,7 +52,7 @@ def count_neighbors(x, y):
     return total_team1, total_team2
 
 def update_grid():
-    global grid
+    global grid, total_team1_units, total_team2_units
     new_grid = [row[:] for row in grid]
     for i in range(rows):
         for j in range(cols):
@@ -59,18 +61,22 @@ def update_grid():
             if grid[i][j] == 1: 
                 if neighbors_team1 < 2 or neighbors_team1 > 3:
                     new_grid[i][j] = 0
+                    total_team1_units -= 1
             elif grid[i][j] == 2:  
                 if neighbors_team2 < 2 or neighbors_team2 > 3:
                     new_grid[i][j] = 0
-            else:  # Empty cell
+                    total_team2_units -= 1
+            else:  
                 if neighbors_team1 == 3:
                     new_grid[i][j] = 1
+                    total_team1_units += 1
                 elif neighbors_team2 == 3:
                     new_grid[i][j] = 2 
+                    total_team2_units += 1 
     grid = new_grid
 
 def draw_text(remaining_team1, remaining_team2):
-    global generation
+    global generation 
     font = pygame.font.SysFont(None, 35)
     text = font.render(f"Generation: {generation}", True, (255, 255, 255))
     display.blit(text, (10, 10))
@@ -83,8 +89,8 @@ def draw_text(remaining_team1, remaining_team2):
 
 def select_initial_positions(team):
     selected_positions = []
-    remaining_choices = 9  
-    while len(selected_positions) < 9:
+    remaining_choices = 10  
+    while len(selected_positions) < 10:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -98,26 +104,56 @@ def select_initial_positions(team):
                         grid[x][y] = team
                         display.fill((0, 0, 0))
                         draw_grid()
-                        draw_text(9 - len(selected_positions), remaining_choices - 1) 
+                        draw_text(10 - len(selected_positions), remaining_choices - 1) 
                         pygame.display.flip()
                         pygame.time .delay(100) 
                         remaining_choices -= 1  
     return selected_positions
 
+def display_end_game_results():
+    display.fill((0, 0, 0))
+    font = pygame.font.SysFont(None, 55)
+    result_text = f"Team 1 Units: {total_team1_units} | Team 2 Units: {total_team2_units}"
+    winner_text = "Winner: " + ("Team 1" if total_team1_units > total_team2_units else "Team 2" if total_team2_units > total_team1_units else "It's a Tie!")
+    result_surface = font.render(result_text, True, (255, 255, 255))
+    winner_surface = font.render(winner_text, True, (255, 255, 255))
+    
+    exit_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 50, 200, 50)
+    pygame.draw.rect(display, (255, 0, 0), exit_button)
+    exit_button_text = font.render("Exit", True, (0, 0, 0))
+    
+    display.blit(result_surface, (WIDTH // 2 - result_surface.get_width() // 2, HEIGHT // 2 - 50))
+    display.blit(winner_surface, (WIDTH // 2 - winner_surface.get_width() // 2, HEIGHT // 2 + 10))
+    display.blit(exit_button_text, (exit_button.x + 70, exit_button.y + 10))
+    pygame.display.flip()
+    
+    waiting_for_exit = True
+    while waiting_for_exit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1 and exit_button.collidepoint(event.pos):
+                    waiting_for_exit = False
 
-display.fill((0, 0, 0))
-draw_grid()
-draw_text(9, 9)  
-pygame.display.flip()
+def draw_start_screen():
+    display.fill((0, 0, 0))
+    font = pygame.font.SysFont(None, 55)
+    title = font.render("Game of Life", True, (255, 255, 255))
+    start_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 100)
+    pygame.draw.rect(display, (0, 255, 0), start_button)
+    button_text = font.render("Start", True, (0, 0, 0))
+    display.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 100))
+    display.blit(button_text, (start_button.x + 50, start_button.y + 25))
+    pygame.display.flip()
+    return start_button
+
+start_button = draw_start_screen()
 
 running = True
 paused = False
 game_started = False
-
-team1_positions = select_initial_positions(1)
-team2_positions = select_initial_positions(2)
-
-game_started = True
 
 while running:
     clock.tick(FPS)
@@ -125,13 +161,20 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                paused = not paused
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Left mouse button
+                pos = pygame.mouse.get_pos()
+                if start_button.collidepoint(pos):
+                    team1_positions = select_initial_positions(1)
+                    team2_positions = select_initial_positions(2)
+                    game_started = True
 
     if game_started and not paused:
         update_grid()
         generation += 1
+        if generation >= 50:
+            display_end_game_results()
+            running = False
         display.fill((0, 0, 0))
         draw_grid()
         draw_text(0, 0)
