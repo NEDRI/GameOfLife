@@ -4,9 +4,9 @@ pkgs.mkShell {
   name = "pygame-numpy-env";
 
   buildInputs = [
-    pkgs.python311         
-    pkgs.python311Packages.pygame
-    pkgs.python311Packages.numpy
+    pkgs.python312         
+    pkgs.python312Packages.pygame
+    pkgs.python312Packages.numpy
   ];
 
   shellHook = ''
