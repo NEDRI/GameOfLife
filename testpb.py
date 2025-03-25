@@ -191,7 +191,7 @@ while running:
     if game_started and not paused:
         update_grid()
         generation += 1
-        if generation >= 50:
+        if generation >= 25:
             display_end_game_results()
             running = False
         display.fill((0, 0, 0))

@@ -8,7 +8,7 @@ HEIGHT = 800
 CELL_SIZE = 15
 cols = WIDTH // CELL_SIZE
 rows = HEIGHT // CELL_SIZE
-FPS = 10
+FPS = 5
 
 pygame.init()
 display = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -84,11 +84,16 @@ def draw_text(remaining_team1, remaining_team2):
     controls = font.render("Press SPACE to pause/unpause", True, (255, 255, 255))
     display.blit(controls, (10, HEIGHT - 40))
 
-    remaining_text = font.render(f"Team 1 choices left: {remaining_team1} | Team 2 choices left: {remaining_team2}", True, (255, 255, 255))
+    if remaining_team1 > 0:
+        remaining_text = font.render(f"Team 1 chose left: {remaining_team1}", True, (255, 255, 255))
+    else:
+        remaining_text = font.render(f"Team 2 chose left: {remaining_team2}", True, (255, 255, 255))
+    
     display.blit(remaining_text, (10, 50))
 
-def select_initial_positions(team):
-    selected_positions = []
+def select_initial_positions(team, placement_complete):
+    selected_positions = []  
+    remaining_choices = 10  
     remaining_choices = 10  
     while len(selected_positions) < 10:
         for event in pygame.event.get():
@@ -99,7 +104,7 @@ def select_initial_positions(team):
                 if event.button == 1:  # Left mouse button
                     pos = pygame.mouse.get_pos()
                     x, y = pos[1] // CELL_SIZE, pos[0] // CELL_SIZE
-                    if (x, y) not in selected_positions and grid[x][y] == 0:
+                    if (x, y) not in selected_positions and grid[x][y] == 0 and not placement_complete[team] and not game_started:
                         selected_positions.append((x, y))
                         grid[x][y] = team
                         display.fill((0, 0, 0))
@@ -108,6 +113,8 @@ def select_initial_positions(team):
                         pygame.display.flip()
                         pygame.time .delay(100) 
                         remaining_choices -= 1  
+                        if len(selected_positions) == 10:
+                            placement_complete[team] = True 
     return selected_positions
 
 def display_end_game_results():
@@ -115,6 +122,11 @@ def display_end_game_results():
     font = pygame.font.SysFont(None, 55)
     result_text = f"Team 1 Units: {total_team1_units} | Team 2 Units: {total_team2_units}"
     winner_text = "Winner: " + ("Team 1" if total_team1_units > total_team2_units else "Team 2" if total_team2_units > total_team1_units else "It's a Tie!")
+
+    team1_units = sum(row.count(1) for row in grid)  
+    team2_units = sum(row.count(2) for row in grid)  
+    result_text = f"Team 1 Units: {team1_units} | Team 2 Units: {team2_units}"
+    winner_text = "Winner: " + ("Team 1" if team1_units > team2_units else "Team 2" if team2_units > team1_units else "It's a Tie!")
     result_surface = font.render(result_text, True, (255, 255, 255))
     winner_surface = font.render(winner_text, True, (255, 255, 255))
     
@@ -165,17 +177,21 @@ while running:
             if event.button == 1:  # Left mouse button
                 pos = pygame.mouse.get_pos()
                 if start_button.collidepoint(pos):
-                    display.fill((0, 0, 0))  # Clear the start screen
-                    draw_grid()  # Render the grid immediately upon starting
-                    draw_grid()  # Render the grid immediately upon starting
-                    team1_positions = select_initial_positions(1) 
-                    team2_positions = select_initial_positions(2)
+                    display.fill((0, 0, 0))  
+                    draw_grid()  
+                    pygame.display.flip()  
+
+                    placement_complete = {1: False, 2: False}
+
+                    team1_positions = select_initial_positions(1, placement_complete) 
+                    team2_positions = select_initial_positions(2, placement_complete)
+
                     game_started = True
 
     if game_started and not paused:
         update_grid()
         generation += 1
-        if generation >= 50:
+        if generation >= 25:
             display_end_game_results()
             running = False
         display.fill((0, 0, 0))
