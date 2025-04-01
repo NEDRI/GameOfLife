@@ -216,8 +216,8 @@ while running:
         update_grid()
         generation += 1
         if generation >= 25:
-            display_end_game_results()
             running = False
+            display_end_game_results()
         display.fill((0, 0, 0))
         draw_grid()
         draw_text(0, 0)
