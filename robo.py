@@ -94,7 +94,6 @@ def draw_text(remaining_team1, remaining_team2):
 def select_initial_positions(team, placement_complete):
     selected_positions = []  
     remaining_choices = 10  
-    remaining_choices = 10  
     while len(selected_positions) < 10:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -111,7 +110,7 @@ def select_initial_positions(team, placement_complete):
                         draw_grid()
                         draw_text(10 - len(selected_positions), remaining_choices - 1) 
                         pygame.display.flip()
-                        pygame.time .delay(100) 
+                        pygame.time.delay(100) 
                         remaining_choices -= 1  
                         if len(selected_positions) == 10:
                             placement_complete[team] = True 
@@ -164,14 +163,14 @@ def display_end_game_results():
                         reset_game()  
 
 def reset_game():
-    global grid, generation, total_team1_units, total_team2_units, game_started, paused
+    global grid, generation, total_team1_units, total_team2_units, game_started, paused, start_button
     grid = [[0 for _ in range(cols)] for _ in range(rows)]
     generation = 0
     total_team1_units = 0
     total_team2_units = 0
     game_started = False
     paused = False
-    draw_start_screen() 
+    start_button = draw_start_screen()  
 
 def draw_start_screen():
     display.fill((0, 0, 0))
@@ -200,7 +199,7 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # Left mouse button
                 pos = pygame.mouse.get_pos()
-                if start_button.collidepoint(pos):
+                if start_button.collidepoint(pos) and not game_started:
                     display.fill((0, 0, 0))  
                     draw_grid()  
                     pygame.display.flip()  
