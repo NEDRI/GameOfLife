@@ -1,0 +1,3 @@
+top score (nick 3 litery)
+te pola zielone co dodaja jednostki
+restart button
