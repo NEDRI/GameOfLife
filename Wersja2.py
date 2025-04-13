@@ -135,7 +135,6 @@ def select_initial_positions(team, placement_complete):
     return selected_positions
 
 def read_scores():
-    """Read scores from file and return sorted list of (nickname, score) tuples"""
     scores = []
     try:
         with open("scores.txt", "r") as file:
@@ -147,17 +146,14 @@ def read_scores():
                     continue
     except FileNotFoundError:
         pass
-    # Sort by score descending
     scores.sort(key=lambda x: x[1], reverse=True)
     return scores
 
 def write_score(nickname, score):
-    """Save a score to the scores file"""
     with open("scores.txt", "a") as file:
         file.write(f"{nickname} {score}\n")
 
 def get_player_nickname(team_num):
-    """Get 3-letter nickname for a player"""
     nickname = ""
     font = pygame.font.SysFont(None, 55)
     while len(nickname) < 3:
@@ -188,28 +184,24 @@ def display_scores():
 def display_end_game_results(nickname):
     global game_started, running, generation, total_team1_units, total_team2_units
     
-    # Get player nicknames
     player1 = get_player_nickname(1)
     player2 = get_player_nickname(2)
     
-    # Save scores
     write_score(player1, abs(total_team1_units))
     write_score(player2, abs(total_team2_units))
-    
-    # Show top scores
+
     display.fill((0, 0, 0))
     font = pygame.font.SysFont(None, 55)
     title = font.render("TOP SCORES:", True, (255,255,255))
     display.blit(title, (WIDTH//2 - title.get_width()//2, 100))
     
-    scores = read_scores()[:3]  # Get top 3 scores
+    scores = read_scores()[:3] 
     y_offset = 180
     for i, (name, score) in enumerate(scores, 1):
         score_text = font.render(f"{i}. {name}: {score}", True, (255,255,255))
         display.blit(score_text, (WIDTH//2 - score_text.get_width()//2, y_offset))
         y_offset += 60
     
-    # Show current game results
     result_text = f"{player1}: {abs(total_team1_units)} | {player2}: {abs(total_team2_units)}"
     winner_text = "Winner: " + (player1 if abs(total_team1_units) > abs(total_team2_units) 
     else player2 if abs(total_team2_units) > abs(total_team1_units) 
@@ -273,21 +265,17 @@ def display_end_game_results(nickname):
                 elif len(player2_nickname) < 3 and event.unicode.isalpha():
                     player2_nickname += event.unicode.upper()
     
-    # Save scores
     save_score(player1_nickname, total_team1_units)
     save_score(player2_nickname, total_team2_units)
-    
-    # Display top scores
+
     top_scores = display_scores()
     
-    # Display results
     result_text = f"Team 1 Units: {total_team1_units} | Team 2 Units: {total_team2_units}"
     winner_text = "Winner: " + ("Team 1" if total_team1_units > total_team2_units else "Team 2" if total_team2_units > total_team1_units else "It's a Tie!")
     
     result_surface = font.render(result_text, True, (255, 255, 255))
     winner_surface = font.render(winner_text, True, (255, 255, 255))
-    
-    # Draw buttons
+
     next_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 120, 200, 50)
     pygame.draw.rect(display, (0, 255, 0), next_button)
     next_button_text = font.render("Next", True, (0, 0, 0))
@@ -449,7 +437,6 @@ while running:
             should_restart = display_end_game_results(nickname)
             if should_restart:
                 start_button = reset_game()
-                # Reset the game state and wait for start button click
                 waiting_for_start = True
                 while waiting_for_start:
                     for event in pygame.event.get():
@@ -465,7 +452,6 @@ while running:
                                     display.fill((0, 0, 0))
                                     draw_grid()
                                     pygame.display.flip()
-                                    # Reset initial positions
                                     placement_complete = {1: False, 2: False}
                                     team1_positions = select_initial_positions(1, placement_complete)
                                     team2_positions = select_initial_positions(2, placement_complete)
