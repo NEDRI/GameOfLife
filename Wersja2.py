@@ -25,11 +25,13 @@ def draw_grid():
     for i in range(rows):
         for j in range(cols):
             if grid[i][j] == 1:
-                color = (255, 20, 0)  
+                color = (255, 20, 0)  # Red - Team 1
             elif grid[i][j] == 2:
-                color = (55, 255, 252)  
+                color = (55, 255, 252)  # Cyan - Team 2
+            elif grid[i][j] == 3:
+                color = (0, 255, 0)  # Green - Team 3
             else:
-                color = (0, 0, 0)  
+                color = (0, 0, 0)  # Black - Empty
             pygame.draw.rect(display, color,
                              (j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1))
     for i in range(rows):
@@ -42,21 +44,25 @@ def draw_grid():
 def count_neighbors(x, y):
     total_team1 = 0
     total_team2 = 0
+    total_team3 = 0
     for i in range(-1, 2):
         for j in range(-1, 2):
             if x + i >= 0 and x + i < rows and y + j >= 0 and y + j < cols:
-                if grid[(x + i) % rows][(y + j) % cols] == 1:
+                cell = grid[(x + i) % rows][(y + j) % cols]
+                if cell == 1:
                     total_team1 += 1
-                elif grid[(x + i) % rows][(y + j) % cols] == 2:
+                elif cell == 2:
                     total_team2 += 1
-    return total_team1, total_team2
+                elif cell == 3:
+                    total_team3 += 1
+    return total_team1, total_team2, total_team3
 
 def update_grid():
     global grid, total_team1_units, total_team2_units
     new_grid = [row[:] for row in grid]
     for i in range(rows):
         for j in range(cols):
-            neighbors_team1, neighbors_team2 = count_neighbors(i, j)
+            neighbors_team1, neighbors_team2, neighbors_team3 = count_neighbors(i, j)
 
             if grid[i][j] == 1:  # Team 1
                 if neighbors_team1 < 2 or neighbors_team1 > 3:
@@ -66,13 +72,27 @@ def update_grid():
                 if neighbors_team2 < 2 or neighbors_team2 > 3:
                     new_grid[i][j] = 0
                     total_team2_units -= 1
+            elif grid[i][j] == 3:  # Team 3
+                # Green boxes don't interact with each other
+                # But disappear when interacting with teams
+                if neighbors_team1 > 0 or neighbors_team2 > 0:
+                    new_grid[i][j] = 0  # Remove the green box
+                    spawn_count = 0
+                    for dx, dy in [(0,1),(1,0),(0,-1),(-1,0)]:
+                        if spawn_count >= 2:
+                            break
+                        nx, ny = (i + dx) % rows, (j + dy) % cols
+                        if new_grid[nx][ny] == 0:
+                            new_grid[nx][ny] = 1 if neighbors_team1 > neighbors_team2 else 2
+                            spawn_count += 1
             else:  # Dead cell
                 if neighbors_team1 == 3:
                     new_grid[i][j] = 1
                     total_team1_units += 1
                 elif neighbors_team2 == 3:
                     new_grid[i][j] = 2 
-                    total_team2_units += 1 
+                    total_team2_units += 1
+                # Removed green box creation rule
     grid = new_grid
 
 def draw_text(remaining_team1, remaining_team2):
@@ -117,7 +137,32 @@ def select_initial_positions(team, placement_complete):
                             placement_complete[team] = True 
     return selected_positions
 
-def display_end_game_results():
+def read_scores():
+    """Read scores from the scores.txt file."""
+    scores = []
+    try:
+        with open("scores.txt", "r") as file:
+            for line in file:
+                nickname, score = line.split()
+                scores.append((nickname, int(score)))
+    except FileNotFoundError:
+        pass  # If the file doesn't exist, return an empty list
+    return scores
+
+def write_score(nickname, score):
+    """Write a new score to the scores.txt file."""
+    with open("scores.txt", "a") as file:
+        file.write(f"{nickname} {score}\n")
+
+def display_scores():
+    """Display the top scores."""
+    scores = read_scores()
+    scores.sort(key=lambda x: x[1], reverse=True)  # Sort by score, descending
+    top_scores = scores[:5]  # Get top 5 scores
+    return top_scores
+
+def display_end_game_results(nickname): 
+    global game_started  # Ensure game_started is accessible
     display.fill((0, 0, 0))
     font = pygame.font.SysFont(None, 55)
     result_text = f"Team 1 Units: {total_team1_units} | Team 2 Units: {total_team2_units}"
@@ -159,9 +204,22 @@ def display_end_game_results():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if exit_button.collidepoint(event.pos):
-                        waiting_for_exit = False
+                        pygame.quit()
+                        exit()
                     elif restart_button.collidepoint(event.pos):
-                        reset_game()  
+                        reset_game()
+                        waiting_for_exit = False
+                        return  # Exit the results screen
+
+def generate_green_fields():
+    """Generate 100 random green fields at game start"""
+    green_count = 0
+    while green_count < 100:
+        x = random.randint(0, rows-1)
+        y = random.randint(0, cols-1)
+        if grid[x][y] == 0:
+            grid[x][y] = 3  # Team 3 (green)
+            green_count += 1
 
 def reset_game():
     global grid, generation, total_team1_units, total_team2_units, game_started, paused
@@ -171,7 +229,8 @@ def reset_game():
     total_team2_units = 0
     game_started = False
     paused = False
-    draw_start_screen() 
+    generate_green_fields()  # Generate green fields before drawing screen
+    draw_start_screen()
 
 def draw_start_screen():
     display.fill((0, 0, 0))
@@ -205,6 +264,7 @@ while running:
                     draw_grid()  
                     pygame.display.flip()  
 
+                    generate_green_fields()  # Generate green fields before player selection
                     placement_complete = {1: False, 2: False}
 
                     team1_positions = select_initial_positions(1, placement_complete) 
@@ -215,9 +275,30 @@ while running:
     if game_started and not paused:
         update_grid()
         generation += 1
-        if generation >= 25:
+        if generation > 25:  # Changed from >= to > to allow generation 25 to complete
             running = False
-            display_end_game_results()
+            # Calculate final score (total units)
+            final_score = total_team1_units + total_team2_units
+            
+            # Display end game results
+            display_end_game_results("")  # Pass empty string for nickname
+            pygame.display.flip()
+            
+            # Get nickname input
+            nickname = ""
+            input_active = True
+            while input_active and len(nickname) < 3:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN and len(nickname) >= 3:
+                            input_active = False
+                        elif event.key == pygame.K_BACKSPACE:
+                            nickname = nickname[:-1]
+                        elif len(nickname) < 3 and event.unicode.isalpha():
+                            nickname += event.unicode.upper()
+            
+            write_score(nickname, final_score)
+            display_end_game_results(nickname)
         display.fill((0, 0, 0))
         draw_grid()
         draw_text(0, 0)
